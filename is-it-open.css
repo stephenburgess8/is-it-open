@@ -1,0 +1,11 @@
+.open {
+	display:none;
+	height: 32px;
+	width: 32px;
+}
+
+.closed {
+	display:block;
+	height: 32px;
+	width: 32px;
+}
