@@ -1,305 +1,255 @@
-window.onload = function() {
-	var date = new Date();
+window.onload = function()
+{
+	var date = getTime();
+	var locations = getLocations();
+	locations.map(
+		function(location) { return updateDOM(date, location); }
+	);
+}
+
+function getTime()
+{
+	var jsDate = new Date();
+	var prettyDate = {};
 	// Note: getMonth returns 0-11
-	var month = date.getMonth();
+	prettyDate.month = jsDate.getMonth();
 	// Note: getDate returns 1-31
-	var dateOfMonth = date.getDate();
+	prettyDate.date = jsDate.getDate();
 
 	// Corrects for Daylight savings
-	if (month <= 2 || month >= 10) {
-		if ((month == 2 && dateOfMonth < 8) || (month != 2)) {
-			date.setUTCHours(date.getUTCHours()-5);
+	if (prettyDate.month <= 2 || prettyDate.month >= 10)
+	{
+		if ((prettyDate.month == 2 && prettyDate.date < 8) || (prettyDate.month != 2))
+		{
+			jsDate.setUTCHours(jsDate.getUTCHours()-5);
 		}
-	} else {
-		date.setUTCHours(date.getUTCHours()-4);
+	}
+	else
+	{
+		jsDate.setUTCHours(jsDate.getUTCHours()-4);
 	}
 
 	// Note: Sunday is 0, Monday is 1, and so on.
-	var day = date.getUTCDay();
+	prettyDate.day = jsDate.getUTCDay();
 	// note: getHours returns 0-23
-	var hour = date.getUTCHours();
-	var minutes = date.getUTCMinutes();
-	console.log(hour);
+	prettyDate.hour = jsDate.getUTCHours();
+	prettyDate.minutes = jsDate.getUTCMinutes();
 
-	// MORE Store
-
-	var moreStoreOpen = false;
-
-	if (day > 0 && day < 6) {
-		if (hour > 7) {
-			moreStoreOpen = true;
-		}
-	} else {
-		if (hour < 1 || hour > 10) {
-			moreStoreOpen = true;
-		}
-	} 
-	var open = document.getElementById("moreStoreOpen");
-	var closed = document.getElementById("moreStoreClosed");
-
-	if (moreStoreOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
+	if (prettyDate.minutes.toString().length !== 1)
+	{
+		prettyDate.military = parseInt("" + prettyDate.hour + prettyDate.minutes);
 	}
-
-
-	// MORE Card Office
-
-	var moreCardOpen = false;
-
-
-	if (day > 0 && day < 6) {
-		if ( ( hour > 8 && hour < 17 ) || ( hour == 8 && minutes > 29 ) ) {
-			moreCardOpen = true;
-		}
+	else
+	{
+		prettyDate.military = parseInt("" + prettyDate.hour + 0 + prettyDate.minutes);
 	}
+	
+	return prettyDate;
+}
 
-	open = document.getElementById("moreCardOpen");
-	closed = document.getElementById("moreCardClosed");
-
-	if (moreCardOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
+function updateDOM(date, location)
+{
+	var open = false;
+	// If it is open today
+	if ((location.hours[date.day].open &&
+		// If later or equal to opening time and before closing time
+		 date.military >= location.hours[date.day].open &&
+		 date.military < location.hours[date.day].close) ||
+		// or if they are open after midnight and it is before that closing time
+		(location.hours[date.day].lateNightClose &&
+		 date.military < location.hours[date.day].lateNightClose))
+	{
+		// Show green, hide red
+		document.getElementById(location.id + "Open").style.display = "block";
+		document.getElementById(location.id + "Closed").style.display = "none";
+	} // otherwise default behavior of showing red and hiding green
+	else
+	{
+		document.getElementById(location.id + "Open").style.display = "none";
+		document.getElementById(location.id + "Closed").style.display = "block";
 	}
+}
 
-
-	// Starbucks
-
-	var starbucksOpen = false;
-
-	if (day > 0 && day < 6) {
-		if ( ( hour > 7 && hour < 23 ) || ( hour == 7 && minutes > 29 ) ){
-			starbucksOpen = true;
-		}
-	} else {
-		if ( hour >= 10 && hour < 23) {
-			starbucksOpen = true;
-		}
-	}
-
-	open = document.getElementById("starbucksOpen");
-	closed = document.getElementById("starbucksClosed");
-
-	if (starbucksOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
-	}
-
-	// Parking
-
-	var parkingOpen = false;
-
-	if (day > 0 && day < 6) {
-		if ( ( hour > 8 && hour < 17 ) || ( hour == 8 && minutes > 29 ) ) {
-			parkingOpen = true;
-		}
-	}
-
-	open = document.getElementById("parkingOpen");
-	closed = document.getElementById("parkingClosed");
-
-	if (parkingOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
-	}
-
-
-	// CTS
-
-	var ctsOpen = false;
-
-	if (day > 0 && day < 5) {
-		if ( ( hour >= 8 && hour < 19 ) || ( hour == 19 && minutes < 45 ) ) {
-			ctsOpen = true;
-		}
-	} else if (day == 5) {
-		if ( ( hour >= 8 && hour < 17) || ( hour == 17 && minutes < 45 ) ) {
-			ctsOpen = true;
-		}
-	}
-
-	open = document.getElementById("ctsOpen");
-	closed = document.getElementById("ctsClosed");
-
-	if (ctsOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
-	}
-
-
-	// Counseling
-
-	var counselingOpen = false;
-
-		if (day > 0 && day < 6) {
-		if ( ( hour > 8 && hour < 17 ) || ( hour == 8 && minutes > 29 ) ) {
-			counselingOpen = true;
-		}
-	}
-
-	open = document.getElementById("counselingOpen");
-	closed = document.getElementById("counselingClosed");
-
-	if (counselingOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
-	}
-
-
-	// Registrar
-
-	var registrarOpen = false;
-
-		if (day > 0 && day < 6) {
-		if ( hour >= 9 && hour < 17 ) {
-			registrarOpen = true;
-		}
-	}
-
-	open = document.getElementById("registrarOpen");
-	closed = document.getElementById("registrarClosed");
-
-	if (registrarOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
-	}
-
-
-	// Advising
-
-	var advisingOpen = false;
-
-		if (day > 0 && day < 6) {
-		if ( ( hour > 8 && hour < 17 ) || ( hour == 8 && minutes > 29 ) ) {
-			advisingOpen = true;
-		}
-	}
-
-	open = document.getElementById("advisingOpen");
-	closed = document.getElementById("advisingClosed");
-
-	if (advisingOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
-	}
-
-
-	// Career Development
-
-	var cdcOpen = false;
-
-	if (day == 1 || day == 2 || day == 4) {
-		if ( ( hour > 8 && hour < 17 ) || ( hour == 8 && minutes > 29 ) ) {
-			cdcOpen = true;
-		}
-	} else if (day == 3) {
-		if ( ( hour > 8 && hour < 18 ) || ( hour == 8 && minutes > 29 ) || ( hour == 18 && minutes < 31 ) ) {
-			cdcOpen = true;
-		}
-	} else if (day == 5) {
-		if ( hour > 8 && hour < 16 ) {
-			cdcOpen = true;
-		}
-	}
-
-	open = document.getElementById("cdcOpen");
-	closed = document.getElementById("cdcClosed");
-
-	if (cdcOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
-	}
-
-
-	// Learning Center
-
-	var learningOpen = false;
-
-		if (day > 0 && day < 6) {
-		if ( hour >= 10 && hour < 17 ) {
-			learningOpen = true;
-		}
-	}
-
-	open = document.getElementById("learningOpen");
-	closed = document.getElementById("learningClosed");
-
-	if (learningOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
-	}
-
-
-	// Neuberger
-
-	var neubergerOpen = false;
-
-	if ( day != 1 ) {
-		if ( hour >= 12 && hour < 17 ) {
-			neubergerOpen = true;
-		}
-	}
-
-	open = document.getElementById("neubergerOpen");
-	closed = document.getElementById("neubergerClosed");
-
-	if (neubergerOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
-	}
-
-
-	// Study Abroad
-
-	var studyAbroadOpen = false;
-
-		if (day > 0 && day < 6) {
-		if ( ( hour > 8 && hour < 17 ) || ( hour == 8 && minutes > 29 ) ) {
-			studyAbroadOpen = true;
-		}
-	}
-
-	open = document.getElementById("studyAbroadOpen");
-	closed = document.getElementById("studyAbroadClosed");
-
-	if (studyAbroadOpen) {
-		open.style.display = "block";
-		closed.style.display = "none";
-	} else {
-		open.style.display = "none";
-		closed.style.display = "block";
-	}
+function getLocations()
+{
+	return
+	[
+		// MORE Store
+		{
+			"id": "moreStore",
+			"displayName" : "MORE Store",
+			"telephoneNumber": "(914) 251-4498",
+			"displayHours": "Monday - Thursday:  8:00 am - 12:00 am<br>" +
+							"Friday:  8:00 am - 1:00 am<br>" +
+		                    "Saturday:  11:00 am - 1:00 am<br>" +
+		                    "Sunday:  11:00 am - 12:00 am",
+			"hours":
+			[
+				// Use 24 hour time for simplicity
+				{ "lateNightClose": 100,       // Sunday Morning
+				  "open": 1100, "close": 2359}, // Sunday
+				{ "open": 800, "close": 2359}, // Monday
+				{ "open": 800, "close": 2359}, // Tuesday
+				{ "open": 800, "close": 2359}, // Wednesday
+				{ "open": 800, "close": 2359}, // Thursday
+				{ "open": 800, "close": 2359}, // Friday
+				{ "lateNightClose": 100,       // Saturday Morning
+				  "open": 1100, "close": 2359}  // Saturday
+			]
+		},
+		// MORE Card
+		{
+			"id": "moreCard",
+			"hours":
+			[
+				{ }, // Sunday
+				{ "open": 830, "close": 1700}, // Monday
+				{ "open": 830, "close": 1700}, // Tuesday
+				{ "open": 830, "close": 1700}, // Wednesday
+				{ "open": 830, "close": 1700}, // Thursday
+				{ "open": 830, "close": 1700}, // Friday
+				{ }  // Saturday
+			]
+		},
+		// Starbucks
+		{
+			"id": "starbucks",
+			"hours":
+			[
+				{ "open": 1000, "close": 2300}, // Sunday
+				{ "open": 730, "close": 2300}, // Monday
+				{ "open": 730, "close": 2300}, // Tuesday
+				{ "open": 730, "close": 2300}, // Wednesday
+				{ "open": 730, "close": 2300}, // Thursday
+				{ "open": 730, "close": 2300}, // Friday
+				{ "open": 1000, "close": 2300}  // Saturday
+			]
+		},
+		// Parking and Transportation
+		{
+			"id": "parking",
+			"hours":
+			[
+				{ }, // Sunday
+				{ "open": 830, "close": 1700}, // Monday
+				{ "open": 830, "close": 1700}, // Tuesday
+				{ "open": 830, "close": 1700}, // Wednesday
+				{ "open": 830, "close": 1700}, // Thursday
+				{ "open": 830, "close": 1700}, // Friday
+				{ }  // Saturday
+			]
+		},
+		// CTS
+		{
+			"id": "cts",
+			"hours":
+			[
+				{ }, // Sunday
+				{ "open": 800, "close": 1945}, // Monday
+				{ "open": 800, "close": 1945}, // Tuesday
+				{ "open": 800, "close": 1945}, // Wednesday
+				{ "open": 800, "close": 1945}, // Thursday
+				{ "open": 800, "close": 1645}, // Friday
+				{ }  // Saturday
+			]
+		},
+		// Counseling
+		{
+			"id": "counseling",
+			"hours":
+			[
+				{ }, // Sunday
+				{ "open": 830, "close": 1700}, // Monday
+				{ "open": 830, "close": 1700}, // Tuesday
+				{ "open": 830, "close": 1700}, // Wednesday
+				{ "open": 830, "close": 1700}, // Thursday
+				{ "open": 830, "close": 1700}, // Friday
+				{ }  // Saturday
+			]
+		},
+		// Advising
+		{
+			"id": "advising",
+			"hours":
+			[
+				{ }, // Sunday
+				{ "open": 830, "close": 1700}, // Monday
+				{ "open": 830, "close": 1700}, // Tuesday
+				{ "open": 830, "close": 1700}, // Wednesday
+				{ "open": 830, "close": 1700}, // Thursday
+				{ "open": 830, "close": 1700}, // Friday
+				{ }  // Saturday
+			]
+		},
+		// Career Development Center
+		{
+			"id": "cdc",
+			"hours":
+			[
+				{ }, // Sunday
+				{ "open": 830, "close": 1700}, // Monday
+				{ "open": 830, "close": 1700}, // Tuesday
+				{ "open": 830, "close": 1830}, // Wednesday
+				{ "open": 830, "close": 1700}, // Thursday
+				{ "open": 830, "close": 1600}, // Friday
+				{ }  // Saturday
+			]
+		},
+		// Learning Center
+		{
+			"id": "learning",
+			"hours":
+			[
+				{ }, // Sunday
+				{ "open": 1000, "close": 1700}, // Monday
+				{ "open": 1000, "close": 1700}, // Tuesday
+				{ "open": 1000, "close": 1700}, // Wednesday
+				{ "open": 1000, "close": 1700}, // Thursday
+				{ "open": 1000, "close": 1700}, // Friday
+				{ }  // Saturday
+			]
+		},
+		// Neuberger
+		{
+			"id": "neuberger",
+			"hours":
+			[
+				{ "open": 1200, "close": 1700}, // Sunday
+				{ }, // Monday
+				{ "open": 1200, "close": 1700}, // Tuesday
+				{ "open": 1200, "close": 1700}, // Wednesday
+				{ "open": 1200, "close": 1700}, // Thursday
+				{ "open": 1200, "close": 1700}, // Friday
+				{ "open": 1200, "close": 1700}  // Saturday
+			]
+		},
+		// Study Abroad
+		{
+			"id": "studyAbroad",
+			"hours":
+			[
+				{ }, // Sunday
+				{ "open": 830, "close": 1700}, // Monday
+				{ "open": 830, "close": 1700}, // Tuesday
+				{ "open": 830, "close": 1700}, // Wednesday
+				{ "open": 830, "close": 1700}, // Thursday
+				{ "open": 830, "close": 1700}, // Friday
+				{ }  // Saturday
+			]
+		},
+		// Whole Foods
+		{
+			"id": "wholeFoods",
+			"hours":
+			[
+				{ "open": 800, "close": 2200}, // Sunday
+				{ "open": 800, "close": 2200}, // Monday
+				{ "open": 800, "close": 2200}, // Tuesday
+				{ "open": 800, "close": 2200}, // Wednesday
+				{ "open": 800, "close": 2200}, // Thursday
+				{ "open": 800, "close": 2200}, // Friday
+				{ "open": 800, "close": 2200}  // Saturday
+			]
+		},
+	];
 }
